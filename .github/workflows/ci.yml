@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  HERMES_COMMIT: e06df9c2eae6901f4c88f464e0ae6e753c0428b8
+
+jobs:
+  native-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out plugin
+        uses: actions/checkout@v4
+
+      - name: Check out pinned Hermes source
+        uses: actions/checkout@v4
+        with:
+          repository: NousResearch/hermes-agent
+          ref: ${{ env.HERMES_COMMIT }}
+          path: hermes-source
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        with:
+          version: "0.12.13"
+          enable-cache: true
+
+      - name: Install pinned Hermes environment
+        run: uv sync --project hermes-source --locked --python 3.14 --group dev
+
+      - name: Run plugin tests against real Hermes
+        env:
+          HERMES_SOURCE: ${{ github.workspace }}/hermes-source
+        run: uv run --project hermes-source pytest tests -q
+
+      - name: Stage exact plugin tree
+        run: |
+          mkdir -p "$RUNNER_TEMP/hermes-minimizer"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/hermes-minimizer"
+
+      - name: Run native plugin doctor
+        run: uv run --project hermes-source hermes plugins doctor "$RUNNER_TEMP/hermes-minimizer" --ci
+
+      - name: Run catalog admission validation
+        run: uv run --project hermes-source hermes plugins validate "$RUNNER_TEMP/hermes-minimizer"
