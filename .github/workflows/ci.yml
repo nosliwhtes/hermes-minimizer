@@ -7,13 +7,21 @@ on:
 permissions:
   contents: read
 
-env:
-  HERMES_COMMIT: e06df9c2eae6901f4c88f464e0ae6e753c0428b8
-
 jobs:
   native-integration:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        HERMES_COMMIT:
+          - e06df9c2eae6901f4c88f464e0ae6e753c0428b8 # v0.22.0 support floor
+          - 548091836760a67e331b8f5643be8e5c08fae1e6 # official main, 2026-10-18
+    env:
+      HERMES_COMMIT: ${{ matrix.HERMES_COMMIT }}
+      HOME: ${{ runner.temp }}/minimizer-test-home
+      HERMES_HOME: ${{ runner.temp }}/minimizer-hermes-home
+      HERMES_ENABLE_PROJECT_PLUGINS: "0"
 
     steps:
       - name: Check out plugin
@@ -50,4 +58,4 @@ jobs:
         run: uv run --project hermes-source hermes plugins doctor "$RUNNER_TEMP/hermes-minimizer" --ci
 
       - name: Run catalog admission validation
-        run: uv run --project hermes-source hermes plugins validate "$RUNNER_TEMP/hermes-minimizer"
+        run: uv run --project hermes-source hermes plugins validate "$RUNNER_TEMP/hermes-minimizer" --install-deps

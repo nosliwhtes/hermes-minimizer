@@ -1,7 +1,7 @@
 manifest_version: 2
 name: hermes-minimizer
-version: "0.1.0"
-description: "Adds simplest-complete-system guidance to Hermes through the native system prompt section API."
+version: "0.1.1"
+description: "Coding and code-review guidance to reduce over-engineering, reuse existing behavior, and refactor without dropping requirements. One static native prompt section; no tools or hooks."
 author: "Seth Wilson"
 license: MIT
 homepage: "https://github.com/nosliwhtes/hermes-minimizer"
@@ -10,3 +10,7 @@ tags:
   - coding
   - simplicity
   - yagni
+  - code-review
+  - refactoring
+  - over-engineering
+  - reuse
