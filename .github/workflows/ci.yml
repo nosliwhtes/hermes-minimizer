@@ -19,8 +19,8 @@ jobs:
           - 548091836760a67e331b8f5643be8e5c08fae1e6 # official main, 2026-10-18
     env:
       HERMES_COMMIT: ${{ matrix.HERMES_COMMIT }}
-      HOME: ${{ runner.temp }}/minimizer-test-home
-      HERMES_HOME: ${{ runner.temp }}/minimizer-hermes-home
+      HOME: ${{ github.workspace }}/../minimizer-test-home
+      HERMES_HOME: ${{ github.workspace }}/../minimizer-hermes-home
       HERMES_ENABLE_PROJECT_PLUGINS: "0"
 
     steps:
