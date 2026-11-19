@@ -24,9 +24,11 @@ Avoid speculative features, imagined extension points, single-implementation int
 
 Deliver all explicitly requested behavior. Never silently substitute a smaller feature, defer a requirement, or describe a plan as a result. If a requirement is blocked, state the blocker and remaining work.
 
+Keep process proportional to the task: prove one representative end-to-end path before expanding review or packaging, and avoid extra scaffolding for routine reversible edits.
+
 ## Preserve safeguards
 
-Simplicity never removes trust-boundary validation, authorization, security, data-loss prevention, required error handling, accessibility, hardware calibration, migration or rollback safety, concurrency protection, compatibility, required tests, or explicitly requested behavior.
+Simplicity never removes trust-boundary validation, authorization, security, data-loss prevention, required error handling, accessibility, hardware calibration, migration or rollback safety, concurrency protection, compatibility, required tests, or explicitly requested behavior. Verify runtime parser/validator semantics at trust boundaries rather than assuming strict defaults.
 
 Respect approval boundaries. Ask only when a material public, security, data, billing, hard-to-reverse, or otherwise approval-gated choice requires a decision. Proceed with routine reversible work.
 

@@ -17,7 +17,7 @@ uv run --project ../hermes-agent hermes plugins doctor . --ci
 uv run --project ../hermes-agent hermes plugins validate .
 ```
 
-Native integration has also been execution-tested against official commit `548091836760a67e331b8f5643be8e5c08fae1e6`. To reproduce against that revision, check it out in the Hermes clone, repeat the locked sync, and rerun the same commands. No model call is required by this suite.
+Native integration has also been execution-tested against official commit `ae2a81ccc00e9b7c06301523e5bb09608397149c` (v0.23.2), including `plugins.isolation: host`. To reproduce against that revision, check it out in the Hermes clone, repeat the locked sync, and rerun the same commands. No model call is required by this suite.
 
 The tests use Hermes' real plugin manager, native section renderer, and system-prompt assembly. They require `HERMES_SOURCE` pointing to an official source tree and an interpreter with that tree's locked dependencies. Do not substitute a mocked plugin API for compatibility evidence. Doctor and catalog validation do not establish model effectiveness.
 
@@ -38,7 +38,7 @@ Counts use `len(source.splitlines())` for the four fixture source files only. A 
 
 ## Release contract
 
-Version 0.1.1 changes onboarding, metadata, documentation, and executable examples; `__init__.py` and `policy.md` retain their 0.1.0 bytes. The plugin still registers one static native section and fails visibly without the required API. Examples are never imported by the runtime.
+Version 0.2.0 adds a compact policy preset (`policy-compact.md`), native manifest `config_schema` (`preset`, `extra_guidance`), marker/budget guards, and the read-only `/minimizer [status|policy|review]` slash command while keeping zero tools, hooks, middleware, or runtime dependencies and preserving `plugins.isolation: host` compatibility. The plugin fails visibly without `PluginContext.register_system_prompt_section`. Examples are never imported by the runtime.
 
 Keep test-first evidence for executable changes. Run the native suite, standalone verifier, doctor, and catalog validator before requesting review. Follow [CONTRIBUTING.md](../CONTRIBUTING.md) for constraints, licensing, and private-data exclusions.
 

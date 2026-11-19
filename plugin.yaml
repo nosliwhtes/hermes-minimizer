@@ -1,7 +1,7 @@
 manifest_version: 2
 name: hermes-minimizer
-version: "0.1.1"
-description: "Coding and code-review guidance to reduce over-engineering, reuse existing behavior, and refactor without dropping requirements. One static native prompt section; no tools or hooks."
+version: "0.2.0"
+description: "Coding and code-review guidance to reduce over-engineering, reuse existing behavior, and refactor without dropping requirements. Adds a native prompt section, Desktop settings, and /minimizer helper; no tools or hooks."
 author: "Seth Wilson"
 license: MIT
 homepage: "https://github.com/nosliwhtes/hermes-minimizer"
@@ -14,3 +14,17 @@ tags:
   - refactoring
   - over-engineering
   - reuse
+config_schema:
+  preset:
+    type: str
+    choices:
+      - standard
+      - compact
+    default: standard
+    label: "Guidance preset"
+    description: "Standard (~3,150 chars) for full guidance, or Compact (~1,490 chars) to save shared prompt budget."
+  extra_guidance:
+    type: str
+    default: ""
+    label: "Extra guidance"
+    description: "Optional team or repository guidance appended after the core Minimizer policy (bounded to Hermes' 4,000-character section limit)."

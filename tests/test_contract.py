@@ -39,7 +39,7 @@ def _environment(tmp_path, *, enabled=True):
     hermes_home = tmp_path / "hermes-home"
     plugin_dir = hermes_home / "plugins" / "hermes-minimizer"
     plugin_dir.mkdir(parents=True)
-    for name in ("__init__.py", "plugin.yaml", "policy.md"):
+    for name in ("__init__.py", "plugin.yaml", "policy.md", "policy-compact.md"):
         shutil.copy2(ROOT / name, plugin_dir / name)
     bundled = hermes_home / "bundled-plugins"
     bundled.mkdir()
@@ -49,25 +49,28 @@ def _environment(tmp_path, *, enabled=True):
     )
     env = os.environ.copy()
     env.update(HOME=str(home), HERMES_HOME=str(hermes_home),
-               HERMES_BUNDLED_PLUGINS=str(bundled), HERMES_ENABLE_PROJECT_PLUGINS="0")
+               HERMES_BUNDLED_PLUGINS=str(bundled), HERMES_ENABLE_PROJECT_PLUGINS="0",
+               HERMES_DISABLE_LAZY_INSTALLS="1")
     return env
 
 
 def _native(code, env):
     # Both homes are set before bootstrap/import, including fresh resume processes.
+    python = env.get("HERMES_PYTHON") or sys.executable
     bootstrap = (
-        "import sys; "
+        "import os, sys; "
+        "os.environ.pop('PYTHONHOME', None); "
         f"sys.path.insert(0, {str(SOURCE)!r}); "
         "sys._hermes_pin_default_home = True; import hermes_bootstrap; "
         f"exec({textwrap.dedent(code)!r})"
     )
-    proc = subprocess.run([sys.executable, "-I", "-c", bootstrap], cwd=ROOT,
+    proc = subprocess.run([python, "-I", "-c", bootstrap], cwd=ROOT,
                           env=env, text=True, capture_output=True, timeout=90)
     assert proc.returncode == 0, proc.stdout + proc.stderr
     return proc.stdout
 
 
-def test_registration_is_one_exact_static_string_with_no_other_surface(tmp_path):
+def test_registration_uses_only_prompt_section_config_and_command_surfaces(tmp_path):
     _native('''
         import importlib.util
         import os
@@ -77,19 +80,29 @@ def test_registration_is_one_exact_static_string_with_no_other_surface(tmp_path)
         expected = (root / "policy.md").read_text(encoding="utf-8").strip()
         manager = PluginManager()
         native = PluginContext(PluginManifest(name="hermes-minimizer", key="hermes-minimizer", source="user"), manager)
-        calls = []
-        class OnlyPromptSections:
+        calls = {"section": [], "command": []}
+        class AllowedSurfaces:
+            def get_config(self, key, default=None):
+                return native.get_config(key, default)
             def register_system_prompt_section(self, *args, **kwargs):
-                calls.append((args, kwargs))
+                calls["section"].append((args, kwargs))
                 return native.register_system_prompt_section(*args, **kwargs)
+            def register_command(self, *args, **kwargs):
+                calls["command"].append((args, kwargs))
+                return native.register_command(*args, **kwargs)
             def __getattr__(self, name):
                 raise AssertionError("Unexpected plugin surface: " + name)
         spec = importlib.util.spec_from_file_location("minimizer", root / "__init__.py")
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        module.register(OnlyPromptSections())
-        assert calls == [(("minimizer.guidance", expected), {"position": "after_memory"})]
-        assert isinstance(calls[0][0][1], str) and not callable(calls[0][0][1])
+        module.register(AllowedSurfaces())
+        assert len(calls["section"]) == 1
+        sec_args, sec_kwargs = calls["section"][0]
+        assert sec_args[0] == "minimizer.guidance"
+        assert sec_kwargs == {"position": "after_memory"}
+        assert callable(sec_args[1])
+        assert len(calls["command"]) == 1
+        assert calls["command"][0][0][0] == "minimizer"
         rendered = manager.render_system_prompt_sections({"session_id": "exact"})
         assert len(rendered) == 1
         assert (rendered[0].id, rendered[0].position, rendered[0].content) == (

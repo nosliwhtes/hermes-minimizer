@@ -32,7 +32,7 @@ def _isolated_plugin_home(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     home = tmp_path / "hermes-home"
     plugin = home / "plugins" / "hermes-minimizer"
     plugin.mkdir(parents=True)
-    for name in ("__init__.py", "plugin.yaml", "policy.md"):
+    for name in ("__init__.py", "plugin.yaml", "policy.md", "policy-compact.md"):
         shutil.copy2(ROOT / name, plugin / name)
     (home / "bundled-plugins").mkdir()
     (home / "config.yaml").write_text(
@@ -41,32 +41,32 @@ def _isolated_plugin_home(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     )
     env = os.environ.copy()
     env.update(
+        HOME=str(tmp_path / "os-home"),
         HERMES_HOME=str(home),
         HERMES_BUNDLED_PLUGINS=str(home / "bundled-plugins"),
         HERMES_ENABLE_PROJECT_PLUGINS="0",
+        HERMES_DISABLE_LAZY_INSTALLS="1",
         PYTHONPATH=os.pathsep.join(
             filter(None, (str(HERMES_SOURCE), env.get("PYTHONPATH", "")))
         ),
     )
+    (tmp_path / "os-home").mkdir(exist_ok=True)
     return home, env
 
 
 def _run_native(code: str, tmp_path: Path) -> subprocess.CompletedProcess[str]:
     _, env = _isolated_plugin_home(tmp_path)
     code = textwrap.dedent(code)
-    python = env.get("HERMES_PYTHON")
-    if python:
-        bootstrap = (
-            "import os, sys; "
-            "os.environ.pop('PYTHONHOME', None); "
-            f"sys.path.insert(0, {str(HERMES_SOURCE)!r}); "
-            "sys._hermes_pin_default_home = True; "
-            "import hermes_bootstrap; "
-            f"exec({code!r})"
-        )
-        command = [python, "-I", "-c", bootstrap]
-    else:
-        command = [sys.executable, "-c", code]
+    python = env.get("HERMES_PYTHON") or sys.executable
+    bootstrap = (
+        "import os, sys; "
+        "os.environ.pop('PYTHONHOME', None); "
+        f"sys.path.insert(0, {str(HERMES_SOURCE)!r}); "
+        "sys._hermes_pin_default_home = True; "
+        "import hermes_bootstrap; "
+        f"exec({code!r})"
+    )
+    command = [python, "-I", "-c", bootstrap]
     return subprocess.run(
         command,
         cwd=ROOT,

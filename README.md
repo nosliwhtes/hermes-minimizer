@@ -6,7 +6,7 @@ Less unnecessary scaffolding, with all required behavior intact.
 [![Requires Hermes >=0.22.0](https://img.shields.io/badge/Hermes-%3E%3D0.22.0-blue)](https://hermes-agent.nousresearch.com/docs/)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-Minimizer adds one static guidance section to Hermes: reuse what fits, avoid speculative layers, and prove the requested behavior. It adds no tools, hooks, scanners, telemetry, or runtime dependencies. It guides the model; it does not enforce outcomes.
+Minimizer adds a cache-safe `minimizer.guidance` system-prompt section to Hermes: reuse what fits, avoid speculative layers, and prove the requested behavior. It exposes Desktop/TUI settings (`preset`, `extra_guidance`) and a read-only `/minimizer` inspection command. It adds no tools, hooks, scanners, telemetry, or runtime dependencies, and runs cleanly under `plugins.isolation: host`. It guides the model; it does not enforce outcomes.
 
 ## Quick start
 
@@ -37,9 +37,33 @@ The enabled list should include `hermes-minimizer`; doctor checks native discove
 
 [Watch MP4](docs/assets/minimizer-demo.mp4) · [Animated GIF](docs/assets/minimizer-demo.gif) · [Static PNG / reduced-motion option](docs/assets/minimizer-demo.png)
 
+## Settings and `/minimizer` command
+
+Configure Minimizer in Hermes Desktop (**Settings -> Plugins -> hermes-minimizer**) or `config.yaml`:
+
+```yaml
+plugins:
+  entries:
+    hermes-minimizer:
+      settings:
+        preset: standard   # standard (~3,150 chars) or compact (~1,490 chars)
+        extra_guidance: "" # optional team or repo addendum (bounded to 4,000 chars total)
+```
+
+- `compact` saves roughly half the prompt budget when you run several prompt-section plugins inside Hermes' shared 8,000-character limit.
+- `extra_guidance` is appended after the core policy, strips reserved persistence markers, and truncates safely inside Hermes' 4,000-character per-section cap so invalid settings never drop the section.
+- New prompts use the latest settings. Resuming from a persisted prompt keeps its saved text until Hermes rebuilds it.
+- Keep secrets and private material out of `extra_guidance`: Hermes can send it to your model provider and `/minimizer policy` displays it in the calling chat.
+
+Use the in-session `/minimizer` helper anytime:
+
+- `/minimizer` (or `/minimizer status`): show active preset, `extra_guidance` state, and exact rendered size vs. Hermes' 4,000/8,000-character limits.
+- `/minimizer policy`: preview the section for current settings, not a readback of this session's frozen prompt. Hermes can still skip it if the shared budget is full.
+- `/minimizer review`: output the copyable advisory over-engineering review prompt.
+
 ## Everyday use
 
-These are ordinary-language prompts, **not registered commands or magic activation phrases**. The guidance is present when the plugin is enabled for the session.
+The examples below are ordinary-language prompts, **not magic activation phrases**. The guidance is present whenever the plugin is enabled for the session.
 
 - “Be lazy: reuse the existing implementation if its semantics fit this requirement.”
 - “Apply YAGNI here. Remove only speculative extension points, not required behavior.”
@@ -92,7 +116,7 @@ The catalog tracks a reviewed commit and can lag this repository's releases. For
 
 ## Compatibility and development
 
-Native integration has been execution-tested against official Hermes commits `e06df9c2eae6901f4c88f464e0ae6e753c0428b8` (v0.22.0) and `548091836760a67e331b8f5643be8e5c08fae1e6`. This is not a claim that every intermediate version or model was tested.
+Native integration has been execution-tested against official Hermes commits `e06df9c2eae6901f4c88f464e0ae6e753c0428b8` (v0.22.0) and `ae2a81ccc00e9b7c06301523e5bb09608397149c` (v0.23.2), including `plugins.isolation: host`. This is not a claim that every intermediate version or model was tested.
 
 [Development commands and test setup](docs/development.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
 

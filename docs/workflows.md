@@ -2,7 +2,7 @@
 
 [Quick start and limits](../README.md) · [Runnable evidence](../README.md#runnable-evidence)
 
-These are prompts you can adapt, not registered commands. Enabling the plugin adds its static default guidance; none of these phrases activates a hidden mode.
+These are ordinary-language prompts you can adapt. Enabling the plugin adds its default guidance section; none of these phrases activates a hidden mode. To print the review template or check your active preset/budget inside a session, run `/minimizer`, `/minimizer policy`, or `/minimizer review`.
 
 ## Build the smallest complete change
 
@@ -44,7 +44,7 @@ Findings are proposals, not permission to bypass approval. Authorize edits separ
 
 ## Plugin vs. optional skills
 
-This repository is a **native Python plugin**: one `minimizer.guidance` section registered through `PluginContext.register_system_prompt_section`. It does not install a skill, Journey kit, command, scanner, or auto-fixer. The [policy](../policy.md) is the packaged guidance source.
+This repository is a **native Python plugin**: one `minimizer.guidance` section registered through `PluginContext.register_system_prompt_section`, manifest settings (`preset`, `extra_guidance`), and a read-only `/minimizer` inspection command. It does not install a skill, Journey kit, tool, hook, scanner, or auto-fixer. `policy.md` and `policy-compact.md` are the packaged guidance sources.
 
 Skills can supply optional, task-specific procedures alongside that default. A separately installed skill also called Minimizer is not this plugin, and its presence or behavior is not verified by this repository. No Journey install is required. We do not bundle or register a second skill here.
 

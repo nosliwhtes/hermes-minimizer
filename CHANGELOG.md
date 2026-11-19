@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 — 2026-11-19
+
+- Expand `policy.md` with proportional-process and trust-boundary runtime-parser verification guidance, and add `policy-compact.md` (~1,490 chars) for tighter shared prompt budgets.
+- Declare native `config_schema` (`preset`: `standard`/`compact`, `extra_guidance`: bounded team/repo addendum) so Desktop **Settings -> Plugins** renders a form automatically.
+- Sanitize reserved persistence markers and enforce Hermes' 4,000-character section cap on `extra_guidance` so malformed settings cannot cause Hermes to skip the section.
+- Register the read-only `/minimizer [status|policy|review]` slash command via `ctx.register_command`.
+- Verify compatibility with `plugins.isolation: host`, pin `actions/checkout` in CI to a full commit SHA, update the CI matrix to Hermes `v0.22.0` and `v0.23.2`, and prevent lazy PM re-syncs inside isolated test homes.
+
+No tools, hooks, middleware, network calls, telemetry, or runtime dependencies were added. Model effectiveness remains unmeasured.
+
 ## 0.1.1 — 2026-10-18
 
 - Rework onboarding around a reviewed catalog install, a first useful review prompt, verification, lifecycle guidance, and explicit limits.
